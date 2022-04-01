@@ -53,8 +53,8 @@ to setup
   set mainFrontierList []
   set sizePath 1
   set patchDistance 1
-  set xGoal 15
-  set yGoal 15
+  set xGoal 0
+  set yGoal 0
 
   set FirstTime 0
 
@@ -76,13 +76,15 @@ to setup
     set heading 0
     set size 1
     set shape "person"
-    set xStart (random 16)
-    set xcor xStart
-    set yStart (random 16)
-    set ycor yStart
+    set xStart 0
+    set yStart  0
+    while [xStart = 0 and yStart = 0] [
+      set xStart (random 16)
+      set xcor xStart
+      set yStart (random 16)
+      set ycor yStart
+    ]
 
-    if (xcor = xGoal and ycor = yGoal)
-    [ stop]
     set mainFrontierList lput (list xStart yStart xStart yStart) mainFrontierList
     set mainPathList lput (list) mainPathList
     set indexDFS (indexDFS + 1)
@@ -100,13 +102,14 @@ to setup
     set size 1
     set shape "arrow"
 
-    set xStart (random -16)
-    set xcor xStart
-    set yStart (random  16)
-    set ycor yStart
-
-    if (xcor = xGoal and ycor = yGoal)
-    [stop]
+    set xStart 0
+    set yStart  0
+    while [xStart = 0 and yStart = 0] [
+      set xStart (random 16)
+      set xcor xStart
+      set yStart (random -16)
+      set ycor yStart
+    ]
 
     set mainFrontierList lput (list xStart yStart xStart yStart 0) mainFrontierList
     set mainPathList lput (list) mainPathList
@@ -124,15 +127,16 @@ to setup
     set heading 0
     set size 1
     set shape "box"
-    set xStart -15;(random 16)
-    ;set xcor 0
-    set xcor xStart
-    set yStart -14;(random 16)
-    ;set ycor 0
-    set ycor yStart
 
-    if (xcor = xGoal and ycor = yGoal)
-    [ stop]
+    set xStart 0
+    set yStart  0
+    while [xStart = 0 and yStart = 0] [
+      set xStart (random -16)
+      set xcor xStart
+      set yStart (random  -16)
+      set ycor yStart
+    ]
+
     set mainFrontierList lput (list xStart yStart xStart yStart 0) mainFrontierList
     set mainPathList lput (list) mainPathList
     set indexA* (indexA* + 1)
@@ -146,14 +150,15 @@ to setup
     set heading 0
     set size 1
     set shape "bug"
+    set xStart 0
+    set yStart  0
+    while [xStart = 0 and yStart = 0] [
+      set xStart (random -16)
+      set xcor xStart
+      set yStart (random  16)
+      set ycor yStart
+    ]
 
-    set xStart (random -16)
-    set xcor xStart
-    set yStart (random  16)
-    set ycor yStart
-
-    if (xcor = xGoal and ycor = yGoal)
-    [ stop]
     set mainFrontierList lput (list xStart yStart xStart yStart 0) mainFrontierList
     set mainPathList lput (list) mainPathList
     set indexUCS (indexUCS + 1)
@@ -163,10 +168,6 @@ to setup
 
   set numberOfUCS indexUCS
 
-  ;print DFSagentList
-  ;print BFSagentList
-  ;print A*agentList
-  ;print UCSagentList
 
   set indexDFS 0
   set indexBFS 0
@@ -177,7 +178,7 @@ to setup
     set color red
     set heading 0
     set size 1
-    set shape "person"
+    set shape "house"
     set xcor xGoal
     set ycor yGoal
   ]
@@ -205,14 +206,12 @@ to do-plots
 ;  plot countStep
 end
 
-to DFS_BFS_A
+to ALL
   if (length FinishAgentList = ( numberOfDFS + numberOfBFS + numberOfA* + numberOfUCS)) [
-    print "stop"
     show countStepDFS
     show countStepBFS
     show countStepA*
     show countStepUCS
-    ;PathSolution
     stop]
   ;DFS
   tick
@@ -253,29 +252,27 @@ to DFS_BFS_A
         if(CheckLocation? xcor (ycor + sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
         [
           set tmp insert-item 0 tmp (list xcor (ycor + sizePath) xcor ycor)]
-        if(CheckLocation? (xcor + sizePath) ycor indexDFS and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
-        [
-          set tmp insert-item 0 tmp (list (xcor + sizePath) ycor xcor ycor)]
-        if(CheckLocation? xcor (ycor - sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
-        [
-          set tmp insert-item 0 tmp (list xcor (ycor - sizePath) xcor ycor)]
-        if(CheckLocation? (xcor - sizePath) ycor indexDFS and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
-        [
-          set tmp insert-item 0 tmp (list (xcor - sizePath) ycor xcor ycor)]
-
         if (CheckLocation? (xcor + sizePath) (ycor + sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
         [
           set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor + sizePath) xcor ycor)
         ]
-        if (CheckLocation? (xcor + sizePath) (ycor - sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
+        if(CheckLocation? (xcor + sizePath) ycor indexDFS and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
+        [
+          set tmp insert-item 0 tmp (list (xcor + sizePath) ycor xcor ycor)]
+         if (CheckLocation? (xcor + sizePath) (ycor - sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
         [
           set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor - sizePath) xcor ycor)
         ]
-
+        if(CheckLocation? xcor (ycor - sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
+        [
+          set tmp insert-item 0 tmp (list xcor (ycor - sizePath) xcor ycor)]
         if (CheckLocation? (xcor - sizePath) (ycor - sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
         [
           set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor - sizePath) xcor ycor)
         ]
+        if(CheckLocation? (xcor - sizePath) ycor indexDFS and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
+        [
+          set tmp insert-item 0 tmp (list (xcor - sizePath) ycor xcor ycor)]
         if (CheckLocation? (xcor - sizePath) (ycor + sizePath) indexDFS and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
         [
           set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor + sizePath) xcor ycor)
@@ -413,17 +410,18 @@ to DFS_BFS_A
         set tmp remove-item (findIndexOfMinNodeInFrontier (first minCostNode)  (item 1 minCostNode) (last minCostNode) tmp) tmp
 
         let front (list (first minCostNode) (item 1 minCostNode) xcor ycor (last minCostNode))
-
         let pastCost (last minCostNode)
 
         let tmpPathList []
         set tmpPathList (item indexInFrontPath mainPathList ) ;A*
         set tmpPathList lput (front) tmpPathList ; add front to Pathlist
 
+
         set mainFrontierList replace-item indexInFrontPath mainFrontierList tmp
         setxy (first minCostNode) (item 1 minCostNode) ; move to
 
         set countStepA* countStepA* + 1
+
 
         do-plots
         if(CheckLocation? xcor (ycor + sizePath) indexInFrontPath and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
@@ -441,20 +439,20 @@ to DFS_BFS_A
 
         if (CheckLocation? (xcor + sizePath) (ycor + sizePath) indexInFrontPath and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
         [
-          set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor + sizePath) xcor ycor)
+          set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
         ]
         if (CheckLocation? (xcor + sizePath) (ycor - sizePath) indexInFrontPath and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
         [
-          set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor - sizePath) xcor ycor)
+          set tmp insert-item 0 tmp (list (xcor + sizePath) (ycor - sizePath) xcor ycor ( pastCost + sqrt(2)))
         ]
 
         if (CheckLocation? (xcor - sizePath) (ycor - sizePath) indexInFrontPath and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
         [
-          set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor - sizePath) xcor ycor)
+          set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor - sizePath) xcor ycor ( pastCost + sqrt(2)))
         ]
         if (CheckLocation? (xcor - sizePath) (ycor + sizePath) indexInFrontPath and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
         [
-          set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor + sizePath) xcor ycor)
+          set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
         ]
 
         set mainFrontierList replace-item indexInFrontPath mainFrontierList tmp
@@ -628,27 +626,6 @@ to DFS_BFS_A
   ]
 end
 
-to PathSolution
-  print "path"
-  let i 0
-  while [ i != numberOfA*] [
-    let tmp (item i mainPathList )
-    let index last tmp
-    while [index  != first tmp]
-    [
-      foreach tmp [
-        s -> if(( item 2 index  = item 0 s ) and (item 3 index  = item 1 s ))[
-          ask patch item 0 s item 1 s [
-            ifelse (i = 0)[set pcolor red][set pcolor blue]
-          ]
-          set index s
-        ]
-      ]
-    ]
-    set i (i + 1)
-  ]
-end
-
 to-report CheckLocation? [num1 num2 num3]
    ifelse (limit? num1 num2 = true and NotExpaned? num1 num2 num3 = true and notInFrontier? num1 num2 num3 = true) [report true][report false]
 end
@@ -777,13 +754,13 @@ to save-patch-data
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-647
-448
+268
+25
+771
+529
 -1
 -1
-13.0
+15.0
 1
 10
 1
@@ -804,10 +781,10 @@ ticks
 30.0
 
 BUTTON
-28
-52
-91
-85
+15
+46
+110
+79
 NIL
 setup
 NIL
@@ -821,10 +798,10 @@ NIL
 1
 
 BUTTON
-41
-144
-120
-177
+16
+142
+111
+175
 NIL
 clean-up
 NIL
@@ -838,10 +815,10 @@ NIL
 1
 
 BUTTON
-69
-203
-195
-236
+16
+198
+111
+231
 NIL
 show-patch-data
 NIL
@@ -855,10 +832,10 @@ NIL
 1
 
 BUTTON
-46
-283
-194
-316
+16
+253
+131
+286
 NIL
 load-own-patch-data
 NIL
@@ -872,12 +849,12 @@ NIL
 1
 
 BUTTON
-107
-80
-203
-113
+15
+90
+111
+123
 NIL
-DFS_BFS_A
+ALL
 T
 1
 T
@@ -889,70 +866,70 @@ NIL
 1
 
 SLIDER
-876
-135
-1048
-168
+1116
+288
+1288
+321
 A*agents
 A*agents
 0
-10
-1.0
+100
+13.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-897
-197
-1069
-230
+1111
+105
+1283
+138
 DFSagents
 DFSagents
 0
-10
-1.0
+100
+8.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-815
-272
-987
-305
+1114
+170
+1286
+203
 BFSagents
 BFSagents
 0
-10
-0.0
+100
+11.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-836
-332
-1008
-365
+1115
+236
+1287
+269
 UCSagents
 UCSagents
 0
-10
-1.0
+100
+11.0
 1
 1
 NIL
 HORIZONTAL
 
 PLOT
-676
-82
-876
-232
+797
+102
+1049
+384
 RESCUE THE PRINCESS
 time
 number of step
@@ -964,10 +941,21 @@ true
 false
 "" ""
 PENS
-"pen-0" 1.0 0 -13345367 true "" ""
-"pen-1" 1.0 0 -14439633 true "" ""
-"pen-2" 1.0 0 -1184463 true "" ""
-"pen-3" 1.0 0 -2674135 true "" ""
+"pen-0" 1.0 0 -13791810 true "" ""
+"pen-1" 1.0 0 -7500403 true "" ""
+"pen-2" 1.0 0 -11085214 true "" ""
+"pen-3" 1.0 0 -955883 true "" ""
+"pen-4" 1.0 0 -6459832 true "" ""
+"pen-5" 1.0 0 -1184463 true "" ""
+"pen-6" 1.0 0 -10899396 true "" ""
+"pen-7" 1.0 0 -13840069 true "" ""
+"pen-8" 1.0 0 -14835848 true "" ""
+"pen-9" 1.0 0 -11221820 true "" ""
+"pen-10" 1.0 0 -13791810 true "" ""
+"pen-11" 1.0 0 -13345367 true "" ""
+"pen-12" 1.0 0 -8630108 true "" ""
+"pen-13" 1.0 0 -5825686 true "" ""
+"pen-14" 1.0 0 -2064490 true "" ""
 
 @#$#@#$#@
 ## WHAT IS IT?
