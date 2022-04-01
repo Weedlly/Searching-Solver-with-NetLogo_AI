@@ -41,7 +41,7 @@ globals [
 breed [Starts Start]
 breed [goals goal]
 to clean-up
-  clear-plot
+  clear-all-plots
   clear-patches
   clear-drawing
   clear-turtles
@@ -181,17 +181,19 @@ to setup
     set xcor xGoal
     set ycor yGoal
   ]
+  tick
+  do-plots
 end
 
 to do-plots
   set-current-plot "RESCUE THE PRINCESS"
-  set-current-plot-pen "pen-0" plot countStepDFS
+  if(countStepDFS > 0) [set-current-plot-pen "pen-0" set-plot-pen-interval 1 plot countStepDFS]
 
-  set-current-plot-pen "pen-1" plot countStepBFS
+  if(countStepBFS > 0) [set-current-plot-pen "pen-1" set-plot-pen-interval 0.5 plot countStepBFS]
 
-  set-current-plot-pen "pen-2" plot countStepA*
+  if(countStepA* > 0) [set-current-plot-pen "pen-2" set-plot-pen-interval 1.5 plot countStepA*]
 
-  set-current-plot-pen "pen-3" plot countStepUCS
+  if(countStepUCS > 0) [set-current-plot-pen "pen-3" set-plot-pen-interval 2 plot countStepUCS]
 ;  if (indexDFS = 4) [set-current-plot-pen "pen-4" plot countStep]
 ;  if (indexDFS = 5) [set-current-plot-pen "pen-5" plot countStep]
 ;  if (indexDFS = 6) [set-current-plot-pen "pen-6" plot countStep]
@@ -203,7 +205,7 @@ to do-plots
 ;  plot countStep
 end
 
-to ALL
+to DFS_BFS_A
   if (length FinishAgentList = ( numberOfDFS + numberOfBFS + numberOfA* + numberOfUCS)) [
     print "stop"
     show countStepDFS
@@ -875,7 +877,7 @@ BUTTON
 203
 113
 NIL
-ALL
+DFS_BFS_A
 T
 1
 T
@@ -895,7 +897,7 @@ A*agents
 A*agents
 0
 10
-0.0
+1.0
 1
 1
 NIL
@@ -910,7 +912,7 @@ DFSagents
 DFSagents
 0
 10
-0.0
+1.0
 1
 1
 NIL
@@ -925,7 +927,7 @@ BFSagents
 BFSagents
 0
 10
-1.0
+0.0
 1
 1
 NIL
@@ -962,21 +964,10 @@ true
 false
 "" ""
 PENS
-"pen-0" 1.0 0 -13791810 true "" ""
-"pen-1" 1.0 0 -7500403 true "" ""
-"pen-2" 1.0 0 -11085214 true "" ""
-"pen-3" 1.0 0 -955883 true "" ""
-"pen-4" 1.0 0 -6459832 true "" ""
-"pen-5" 1.0 0 -1184463 true "" ""
-"pen-6" 1.0 0 -10899396 true "" ""
-"pen-7" 1.0 0 -13840069 true "" ""
-"pen-8" 1.0 0 -14835848 true "" ""
-"pen-9" 1.0 0 -11221820 true "" ""
-"pen-10" 1.0 0 -13791810 true "" ""
-"pen-11" 1.0 0 -13345367 true "" ""
-"pen-12" 1.0 0 -8630108 true "" ""
-"pen-13" 1.0 0 -5825686 true "" ""
-"pen-14" 1.0 0 -2064490 true "" ""
+"pen-0" 1.0 0 -13345367 true "" ""
+"pen-1" 1.0 0 -14439633 true "" ""
+"pen-2" 1.0 0 -1184463 true "" ""
+"pen-3" 1.0 0 -2674135 true "" ""
 
 @#$#@#$#@
 ## WHAT IS IT?
