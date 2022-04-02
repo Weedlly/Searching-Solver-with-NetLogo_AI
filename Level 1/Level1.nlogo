@@ -9,6 +9,8 @@ globals [
   yGoal
   Foundit
   minCostNode
+  noSolution
+  countStep
 ]
 breed [starts start]
 breed [goals goal]
@@ -26,35 +28,46 @@ to setup
   set PathList []
   set sizePath 1
   set patchDistance 1
-  set xGoal 2
-  set yGoal 0
+  set xGoal 15
+  set yGoal 15
   set Foundit false
+  set noSolution false
   create-starts 1 [
     set color blue
     set heading 0
     set size 1
     set shape "person"
-    set xcor -16
-    set ycor -16
+    set xcor 2
+    set ycor -1
     if (xcor = xGoal and ycor = yGoal)
     [ stop]
     set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
     set minCostNode first FrontierList
+
+    set countStep 0
    ]
     create-goals 1 [
-    set color red
+    set color yellow
     set heading 0
     set size 1
     set shape "house"
     set xcor xGoal
     set ycor yGoal
   ]
-
+  tick
+  do-plots
 end
 
+to do-plots
+  set-current-plot "RESCUE THE PRINCESS"
+  set-current-plot-pen "count step" plot countStep
+end
 
 to BFS
 
+  if (noSolution = true) [
+    stop
+  ]
   if (Foundit = true) [
     PathSolution
     stop
@@ -65,17 +78,20 @@ to BFS
       set Foundit true
       stop]
 
-    set pen-mode "center"
-    if(empty? FrontierList) [stop]
+    ;set pen-mode "center"
+    if(empty? FrontierList) [
+      set noSolution true
+      stop]
 
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
 
     set PathList lput (front) PathList ; add front to Pathlist
     setxy (item 2 front) (item 3 front)
-;    set pen-mode "down"
-    setxy (item 0 front) (item 1 front) ;move to
-;    set pen-mode "up"
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front)
+    set pen-mode "up"
+    set countStep countStep + 1
     if (CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
       set FrontierList lput (list xcor (ycor + sizePath) xcor ycor 0) FrontierList
@@ -117,10 +133,14 @@ to BFS
     ]
 
   ]
+  tick
+  do-plots
 end
 
 to DFS
-
+  if (noSolution = true) [
+    stop
+  ]
   if (Foundit = true) [
     PathSolution
     stop]
@@ -129,48 +149,59 @@ to DFS
     if(xcor = xGoal and ycor = yGoal) [
       set Foundit true
       stop]
-    set pen-mode "center"
-    if(empty? FrontierList) [stop]
+    ;set pen-mode "center"
+    if(empty? FrontierList) [
+      set noSolution true
+      stop]
 
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
 
     set PathList lput (front) PathList ; add front to Pathlist
 
-    setxy (first front) (item 1 front) ;move to
-
+    ;setxy (first front) (item 1 front) ;move to
+    setxy (item 2 front) (item 3 front)
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front)
+    set pen-mode "up"
+    set countStep countStep + 1
     if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor 0)]
     if (CheckLocation? (xcor + sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor 0)
     ]
     if(CheckLocation? (xcor + sizePath) ycor and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor 0)]
      if (CheckLocation? (xcor + sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor 0)
     ]
     if(CheckLocation? xcor (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor 0)]
     if (CheckLocation? (xcor - sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor 0)
     ]
     if(CheckLocation? (xcor - sizePath) ycor  and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor 0)]
     if (CheckLocation? (xcor - sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor 0)
     ]
   ]
+  tick
+  do-plots
 end
 
 to UCS
+  if (noSolution = true) [
+    stop
+  ]
   if (Foundit = true) [
     PathSolution
     stop
@@ -181,8 +212,10 @@ to UCS
       set Foundit true
       stop]
 
-    set pen-mode "center"
-    if(empty? FrontierList) [stop]
+    ;set pen-mode "center"
+    if(empty? FrontierList) [
+      set noSolution true
+      stop]
 
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
@@ -190,9 +223,10 @@ to UCS
 
     set PathList lput (front) PathList ; add front to Pathlist
     setxy (item 2 front) (item 3 front)
-
-    setxy (item 0 front) (item 1 front) ;move to
-
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front)
+    set pen-mode "up"
+    set countStep countStep + 1
     if([pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
       ifelse(CheckLocation? xcor (ycor + sizePath))
@@ -314,9 +348,14 @@ to UCS
 
     set FrontierList sort-by [ [list1 list2] -> item 4 list1 < item 4 list2 ] FrontierList
   ]
+  tick
+  do-plots
 end
 
 to A*
+  if (noSolution = true) [
+    stop
+  ]
   if (Foundit = true) [
     PathSolution
     stop
@@ -326,8 +365,10 @@ to A*
     if(xcor = xGoal and ycor = yGoal) [
       set Foundit true
       stop]
-    set pen-mode "center"
-    if(empty? FrontierList) [stop]
+    ;set pen-mode "center"
+    if(empty? FrontierList) [
+      set noSolution true
+      stop]
 
     set FrontierList remove-item findIndexOfMinNodeInFrontier FrontierList
 
@@ -335,8 +376,12 @@ to A*
 
     let pastCost (last minCostNode)
 
-    setxy (first minCostNode) (item 1 minCostNode) ; move to
-
+    ;setxy (first minCostNode) (item 1 minCostNode) ; move to
+    setxy (item 2 minCostNode) (item 3 minCostNode)
+    set pen-mode "down"
+    setxy (item 0 minCostNode) (item 1 minCostNode)
+    set pen-mode "up"
+    set countStep countStep + 1
 
      if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
@@ -366,9 +411,15 @@ to A*
     [
       set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
     ]
-    set minCostNode item findIndexOfMinNode  FrontierList
+
+    let empty findIndexOfMinNode
+    ifelse (findIndexOfMinNode = -1) [
+      set noSolution true
+      stop][set minCostNode item findIndexOfMinNode  FrontierList]
 
   ]
+  tick
+  do-plots
 end
 
 to PathSolution
@@ -377,12 +428,12 @@ to PathSolution
   [
     foreach PathList [
       s -> if(( item 2 index  = item 0 s ) and (item 3 index  = item 1 s ))[
-        ask patch item 0 s item 1 s [set pcolor green]
+        ask patch item 0 s item 1 s [set pcolor red]
         set index s
       ]
     ]
   ]
-  ask patch xGoal yGoal [set pcolor green]
+  ask patch xGoal yGoal [set pcolor red]
 
 end
 
@@ -519,13 +570,13 @@ to save-patch-data
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+220
 10
-647
-448
+723
+514
 -1
 -1
-13.0
+15.0
 1
 10
 1
@@ -597,10 +648,10 @@ NIL
 1
 
 BUTTON
-19
-297
-98
-330
+94
+26
+173
+59
 NIL
 clean-up\n
 NIL
@@ -680,6 +731,24 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+752
+12
+952
+234
+RESCUE THE PRINCESS
+time
+number of step
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"count step" 1.0 0 -16777216 true "" ""
 
 @#$#@#$#@
 ## WHAT IS IT?
