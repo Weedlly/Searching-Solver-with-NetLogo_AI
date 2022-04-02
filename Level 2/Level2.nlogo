@@ -7,12 +7,15 @@ globals [
   patchDistance
   xGoal
   yGoal
-  Foundit
+  noSolution
   minCostNode
-
+  chooseAlgo
   xTurnBack
   yTurnBack
   countPath
+
+  countStepGo
+  countStepBack
 ]
 breed [starts start]
 breed [goals goal]
@@ -29,18 +32,20 @@ to setup
   set PathList []
   set sizePath 1
   set patchDistance 1
-  set xGoal 2
-  set yGoal 0
+  set xGoal 15
+  set yGoal 15
   set countPath 0
-
-  set Foundit false
+  set countStepGo 0
+  set countStepBack 0
+  set noSolution false
+  set chooseAlgo (random 2)
   create-starts 1 [
     set color blue
     set heading 0
     set size 1
     set shape "person"
-    set xcor -16
-    set ycor -16
+    set xcor -15
+    set ycor -15
     set xTurnBack xcor    ;todo
     set yTurnBack ycor
     if (xcor = xGoal and ycor = yGoal)
@@ -49,37 +54,60 @@ to setup
     set minCostNode first FrontierList
    ]
     create-goals 1 [
-    set color red
+    set color yellow
     set heading 0
     set size 1
     set shape "house"
     set xcor xGoal
     set ycor yGoal
   ]
-
+  tick
+  do-plots
 end
 
+to do-plots
+  set-current-plot "RESCUE THE PRINCESS"
+  set-current-plot-pen "Go" set-plot-pen-interval 1 plot countStepGo
+  set-current-plot-pen "Back" set-plot-pen-interval 1.5 plot countStepBack
+end
 
 to BFS
+  if(noSolution = true) [stop]
   if(countPath = 2) [stop]
   ask starts
   [
+    ifelse (countPath = 1)[
+      set color green
+      if (chooseAlgo = 0) [
+        DFSBack
+      ]
+      if (chooseAlgo = 1) [
+        A*Back
+      ]
+      if (chooseAlgo = 2) [
+        UCSBack
+      ]
+    ]
+    [
     if(xcor = xGoal and ycor = yGoal) [
       PathSolution
+
       set countPath countPath + 1
       set xGoal xTurnBack
       set yGoal yTurnBack
 
-      if(countPath = 1)
-      [
-        set FrontierList []
-        set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
-        set PathList []
-      ]
-    ]
+      set FrontierList []
+      set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
+      set PathList []
+      set minCostNode first FrontierList
 
-    ;set pen-mode "center"
-    if(empty? FrontierList) [stop]
+      stop
+
+    ]
+    if(empty? FrontierList) [
+      set noSolution true
+      stop
+    ]
 
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
@@ -89,6 +117,9 @@ to BFS
     set pen-mode "down"
     setxy (item 0 front) (item 1 front) ;move to
     set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
+
     if (CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
       set FrontierList lput (list xcor (ycor + sizePath) xcor ycor 0) FrontierList
@@ -128,88 +159,135 @@ to BFS
     [
       set FrontierList lput (list (xcor - sizePath) (ycor + sizePath) xcor ycor 0) FrontierList
     ]
-
   ]
+  ]
+  do-plots
+  tick
 end
 
 to DFS
+  if(noSolution = true) [stop]
   if(countPath = 2) [stop]
   ask starts
   [
-
-    if(xcor = xGoal and ycor = yGoal) [
-      PathSolution
-      set countPath countPath + 1
-      set xGoal xTurnBack
-      set yGoal yTurnBack
-      if(countPath = 1)
-      [
-        set FrontierList []
-        set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
-        set PathList []
+    ifelse (countPath = 1)[
+      set color green
+      if (chooseAlgo = 0) [
+        BFSBack
+      ]
+      if (chooseAlgo = 1) [
+        A*Back
+      ]
+      if (chooseAlgo = 2) [
+        UCSBack
       ]
     ]
-    set pen-mode "center"
-    if(empty? FrontierList) [stop]
+    [
+    if(xcor = xGoal and ycor = yGoal) [
+      PathSolution
+
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+
+      set xGoal xTurnBack
+      set yGoal yTurnBack
+
+      set FrontierList []
+      set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
+      set PathList []
+      set minCostNode first FrontierList
+
+      stop
+    ]
+
+    if(empty? FrontierList) [
+        set noSolution true
+        stop]
 
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
 
     set PathList lput (front) PathList ; add front to Pathlist
 
-    setxy (first front) (item 1 front) ;move to
+    setxy (item 2 front) (item 3 front)
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front)
+    set pen-mode "up"
 
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
     if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor 0)]
     if (CheckLocation? (xcor + sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor 0)
     ]
     if(CheckLocation? (xcor + sizePath) ycor and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor 0)]
      if (CheckLocation? (xcor + sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor 0)
     ]
     if(CheckLocation? xcor (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor 0)]
     if (CheckLocation? (xcor - sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor 0)
     ]
     if(CheckLocation? (xcor - sizePath) ycor  and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor)]
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor 0)]
     if (CheckLocation? (xcor - sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
     [
-      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor)
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor 0)
     ]
   ]
+  ]
+  do-plots
+  tick
 end
 
 to UCS
+  if(noSolution = true) [stop]
   if(countPath = 2) [stop]
   ask starts
   [
-    if(xcor = xGoal and ycor = yGoal) [
-      PathSolution
-      set countPath countPath + 1
-      set xGoal xTurnBack
-      set yGoal yTurnBack
-      if(countPath != 2)
-      [
-        set FrontierList []
-        set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
-        set PathList []
+    ifelse (countPath = 1)[
+      set color green
+      if (chooseAlgo = 0) [
+        DFSBack
+      ]
+      if (chooseAlgo = 1) [
+        A*Back
+      ]
+      if (chooseAlgo = 2) [
+        BFSBack
       ]
     ]
+    [
+    if(xcor = xGoal and ycor = yGoal) [
+      PathSolution
 
-    ;set pen-mode "center"
-    if(empty? FrontierList) [stop]
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
 
+      set xGoal xTurnBack
+      set yGoal yTurnBack
+
+      set FrontierList []
+      set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
+      set PathList []
+      set minCostNode first FrontierList
+
+      stop
+    ]
+
+    if(empty? FrontierList) [
+        set noSolution  true
+        stop]
     let front first FrontierList ; get avariable
     set FrontierList remove-item 0 FrontierList
 
@@ -219,6 +297,8 @@ to UCS
     set pen-mode "down"
     setxy (item 0 front) (item 1 front) ;move to
     set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
     if([pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
       ifelse(CheckLocation? xcor (ycor + sizePath))
@@ -335,34 +415,52 @@ to UCS
         ]
       ]
     ]
-
-
-
     set FrontierList sort-by [ [list1 list2] -> item 4 list1 < item 4 list2 ] FrontierList
   ]
+  ]
+  do-plots
+  tick
 end
 
 to A*
+  if(noSolution = true) [stop]
   if (countPath = 2) [stop]
   ask starts
   [
+    ifelse (countPath = 1)[
+      set color green
+      if (chooseAlgo = 0) [
+        DFSBack
+      ]
+      if (chooseAlgo = 1) [
+        BFSBack
+      ]
+      if (chooseAlgo = 2) [
+        UCSBack
+      ]
+    ]
+    [
     if (xcor = xGoal and ycor = yGoal) [
       PathSolution
-      set countPath (countPath + 1)
+
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+
       set xGoal xTurnBack
       set yGoal yTurnBack
 
-      if(countPath = 1)
-      [
-        set FrontierList []
-        set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
-        set minCostNode first FrontierList
-        set PathList []
-      ]
-    ]
-    set pen-mode "center"
+      set FrontierList []
+      set FrontierList lput (list xcor ycor xcor ycor 0) FrontierList
+      set PathList []
 
-    if(empty? FrontierList) [stop]
+      stop
+
+    ]
+
+
+    if(empty? FrontierList) [
+        set noSolution true
+        stop]
 
     set FrontierList remove-item findIndexOfMinNodeInFrontier FrontierList
 
@@ -371,7 +469,13 @@ to A*
     let pastCost (last minCostNode)
 
 
-    setxy (first minCostNode) (item 1 minCostNode) ; move to
+    setxy (item 2 minCostNode) (item 3 minCostNode)
+    set pen-mode "down"
+    setxy (item 0 minCostNode) (item 1 minCostNode)
+    set pen-mode "up"
+
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
     if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
     [
       set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor ( pastCost + 1)) ]
@@ -401,11 +505,327 @@ to A*
       set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
     ]
 
-
-    set minCostNode item findIndexOfMinNode  FrontierList
-    stop
+    let empty findIndexOfMinNode
+    ifelse (findIndexOfMinNode = -1) [
+        set noSolution true
+        stop][set minCostNode item findIndexOfMinNode  FrontierList]
   ]
+  ]
+  do-plots
+  tick
 end
+
+;;;;; Way back home
+to BFSBack
+
+    if(xcor = xGoal and ycor = yGoal) [
+      PathSolution
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+    ]
+    if(empty? FrontierList) [stop]
+
+    let front first FrontierList ; get avariable
+    set FrontierList remove-item 0 FrontierList
+
+    set PathList lput (front) PathList ; add front to Pathlist
+    setxy (item 2 front) (item 3 front)
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front) ;move to
+    set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
+
+    if (CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
+    [
+      set FrontierList lput (list xcor (ycor + sizePath) xcor ycor 0) FrontierList
+    ]
+
+    if (CheckLocation? (xcor + sizePath) (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 2))
+    [
+      set FrontierList lput (list (xcor + sizePath) (ycor + sizePath) xcor ycor 0) FrontierList
+    ]
+
+    if(CheckLocation? (xcor + sizePath) ycor and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
+    [
+      set FrontierList lput (list (xcor + sizePath) ycor xcor ycor 0) FrontierList
+    ]
+
+    if (CheckLocation? (xcor + sizePath) (ycor - sizePath) and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 2))
+    [
+      set FrontierList lput (list (xcor + sizePath) (ycor - sizePath) xcor ycor 0) FrontierList
+    ]
+
+    if(CheckLocation? xcor (ycor - sizePath) and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
+    [
+      set FrontierList lput (list xcor (ycor - sizePath) xcor ycor 0)FrontierList
+    ]
+
+    if (CheckLocation? (xcor - sizePath) (ycor - sizePath) and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 2))
+    [
+      set FrontierList lput (list (xcor - sizePath) (ycor - sizePath) xcor ycor 0) FrontierList
+    ]
+
+    if(CheckLocation? (xcor - sizePath) ycor and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
+    [
+      set FrontierList lput (list (xcor - sizePath) ycor xcor ycor 0)FrontierList
+
+    ]
+    if (CheckLocation? (xcor - sizePath) (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 2))
+    [
+      set FrontierList lput (list (xcor - sizePath) (ycor + sizePath) xcor ycor 0) FrontierList
+    ]
+end
+
+to DFSBack
+    if(xcor = xGoal and ycor = yGoal) [
+      PathSolution
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+    ]
+
+    if(empty? FrontierList) [stop]
+
+    let front first FrontierList ; get avariable
+    set FrontierList remove-item 0 FrontierList
+
+    set PathList lput (front) PathList ; add front to Pathlist
+
+    setxy (item 2 front) (item 3 front)
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front)
+    set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
+    if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor 0)]
+    if (CheckLocation? (xcor + sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor 0)
+    ]
+    if(CheckLocation? (xcor + sizePath) ycor and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor 0)]
+     if (CheckLocation? (xcor + sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor 0)
+    ]
+    if(CheckLocation? xcor (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor 0)]
+    if (CheckLocation? (xcor - sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor 0)
+    ]
+    if(CheckLocation? (xcor - sizePath) ycor  and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor 0)]
+    if (CheckLocation? (xcor - sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor 0)
+    ]
+
+end
+
+to UCSBack
+    if(xcor = xGoal and ycor = yGoal) [
+      PathSolution
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+
+    ]
+
+    if(empty? FrontierList) [stop]
+
+    let front first FrontierList ; get avariable
+    set FrontierList remove-item 0 FrontierList
+
+
+    set PathList lput (front) PathList ; add front to Pathlist
+    setxy (item 2 front) (item 3 front)
+    set pen-mode "down"
+    setxy (item 0 front) (item 1 front) ;move to
+    set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
+    if([pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
+    [
+      ifelse(CheckLocation? xcor (ycor + sizePath))
+      [
+        set FrontierList lput (list xcor (ycor + sizePath) xcor ycor (item 4 front + 1) ) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? xcor (ycor + sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list xcor (ycor + sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+    if([pcolor] of patch-at-heading-and-distance 45 patchDistance <= sqrt 2)
+    [
+      ifelse(CheckLocation? (xcor + sizePath) (ycor + sizePath))
+      [
+        set FrontierList lput (list (xcor + sizePath) (ycor + sizePath) xcor ycor (item 4 front + 1) ) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? (xcor + sizePath) (ycor + sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+
+    if([pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
+    [
+      ifelse(CheckLocation? (xcor + sizePath) ycor)
+      [
+        set FrontierList lput (list (xcor + sizePath) ycor xcor ycor (item 4 front + 1)) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? (xcor + sizePath) ycor
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list (xcor + sizePath) ycor xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+      if([pcolor] of patch-at-heading-and-distance 135 patchDistance <= sqrt 2)
+    [
+      ifelse(CheckLocation? (xcor + sizePath) (ycor - sizePath) )
+      [
+        set FrontierList lput (list (xcor + sizePath) (ycor - sizePath) xcor ycor (item 4 front + 1)) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? (xcor + sizePath) (ycor - sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+
+          set FrontierList replace-item pos_s FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+    if([pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
+    [
+      ifelse(CheckLocation? xcor (ycor - sizePath))
+      [
+        set FrontierList lput (list xcor (ycor - sizePath) xcor ycor (item 4 front + 1)) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? xcor (ycor - sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list xcor (ycor - sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+     if([pcolor] of patch-at-heading-and-distance 225 patchDistance <= sqrt 2)
+    [
+      ifelse(CheckLocation? (xcor - sizePath) (ycor - sizePath))
+      [
+        set FrontierList lput (list (xcor - sizePath) (ycor - sizePath) xcor ycor (item 4 front + 1)) FrontierList
+      ]
+      [
+        let pos_s CheckLocationInFrontier? (xcor - sizePath) (ycor - sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+
+          set FrontierList replace-item pos_s FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+    if([pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
+    [
+      ifelse(CheckLocation? (xcor - sizePath) ycor)
+      [
+        set FrontierList lput (list (xcor - sizePath) ycor xcor ycor (item 4 front + 1))FrontierList
+      ]
+      [
+
+        let pos_s CheckLocationInFrontier? (xcor - sizePath) ycor
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list (xcor - sizePath) ycor xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+
+   if([pcolor] of patch-at-heading-and-distance 315 patchDistance <= sqrt 2)
+    [
+      ifelse(CheckLocation? (xcor - sizePath) (ycor + sizePath))
+      [
+        set FrontierList lput (list (xcor - sizePath) (ycor + sizePath) xcor ycor (item 4 front + 1))FrontierList
+      ]
+      [
+
+        let pos_s CheckLocationInFrontier? (xcor - sizePath) (ycor + sizePath)
+        if(pos_s != -1 and (item 4 front + 1) < item 4 (item pos_s FrontierList))[
+          set FrontierList replace-item pos_s FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor (item 4 front + 1))
+        ]
+      ]
+    ]
+    set FrontierList sort-by [ [list1 list2] -> item 4 list1 < item 4 list2 ] FrontierList
+end
+
+to A*Back
+    if (xcor = xGoal and ycor = yGoal) [
+      PathSolution
+      set countPath countPath + 1
+      if (countPath = 2) [stop]
+
+    ]
+
+    if(empty? FrontierList) [stop]
+
+    set FrontierList remove-item findIndexOfMinNodeInFrontier FrontierList
+
+    set PathList lput (minCostNode) PathList ; add front to Pathlist
+
+    let pastCost (last minCostNode)
+
+
+    setxy (item 2 minCostNode) (item 3 minCostNode)
+    set pen-mode "down"
+    setxy (item 0 minCostNode) (item 1 minCostNode)
+    set pen-mode "up"
+    if (countPath = 0) [set countStepGo countStepGo + 1]
+    if (countPath = 1) [set countStepBack countStepBack + 1]
+    if(CheckLocation? xcor (ycor + sizePath) and  [pcolor] of patch-at-heading-and-distance 0 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor + sizePath) xcor ycor ( pastCost + 1)) ]
+    if (CheckLocation? (xcor + sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 45 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
+    ]
+    if(CheckLocation? (xcor + sizePath) ycor and  [pcolor] of patch-at-heading-and-distance 90 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) ycor xcor ycor ( pastCost + 1))]
+     if (CheckLocation? (xcor + sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 135 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor + sizePath) (ycor - sizePath) xcor ycor ( pastCost + sqrt(2)))
+    ]
+    if(CheckLocation? xcor (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 180 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list xcor (ycor - sizePath) xcor ycor ( pastCost + 1))]
+    if (CheckLocation? (xcor - sizePath) (ycor - sizePath)  and  [pcolor] of patch-at-heading-and-distance 225 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor - sizePath) xcor ycor ( pastCost + sqrt(2)))
+    ]
+    if(CheckLocation? (xcor - sizePath) ycor  and   [pcolor] of patch-at-heading-and-distance 270 patchDistance != 9.9999)
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) ycor xcor ycor ( pastCost + 1))]
+    if (CheckLocation? (xcor - sizePath) (ycor + sizePath)  and  [pcolor] of patch-at-heading-and-distance 315 patchDistance <= (sqrt 0.5))
+    [
+      set FrontierList insert-item 0 FrontierList (list (xcor - sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
+    ]
+
+    let empty findIndexOfMinNode
+    ifelse (findIndexOfMinNode = -1) [stop][set minCostNode item findIndexOfMinNode  FrontierList]
+end
+
+
+
 
 to PathSolution
   ifelse(countPath = 0)
@@ -415,7 +835,7 @@ to PathSolution
     [
       foreach PathList [
         s -> if(( item 2 index  = item 0 s ) and (item 3 index  = item 1 s ))[
-          ask patch item 0 s item 1 s [set pcolor red]
+          ask patch item 0 s item 1 s [set pcolor pink]
           set index s
         ]
       ]
@@ -427,7 +847,7 @@ to PathSolution
     [
       foreach PathList [
         s -> if(( item 2 index  = item 0 s ) and (item 3 index  = item 1 s ))[
-          ask patch item 0 s item 1 s [set pcolor green]
+          ask patch item 0 s item 1 s [set pcolor red]
           set index s
         ]
       ]
@@ -647,10 +1067,10 @@ NIL
 1
 
 BUTTON
-19
-297
-98
-330
+8
+296
+87
+329
 NIL
 clean-up\n
 NIL
@@ -730,6 +1150,25 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+770
+53
+970
+253
+RESCUE THE PRINCESS
+time
+number of step
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"Go" 1.0 0 -14070903 true "" ""
+"Back" 1.0 0 -2674135 true "" ""
 
 @#$#@#$#@
 ## WHAT IS IT?
