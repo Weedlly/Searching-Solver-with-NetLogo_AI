@@ -54,7 +54,7 @@ to setup
   set sizePath 1
   set patchDistance 1
   set xGoal 0
-  set yGoal 0
+  set yGoal 1
 
   set FirstTime 0
 
@@ -78,7 +78,7 @@ to setup
     set shape "person"
     set xStart 0
     set yStart  0
-    while [xStart = 0 and yStart = 0] [
+    while [(xStart = 0 and yStart = 0 ) or  pcolor = 9.9999 ] [
       set xStart (random 16)
       set xcor xStart
       set yStart (random 16)
@@ -104,7 +104,7 @@ to setup
 
     set xStart 0
     set yStart  0
-    while [xStart = 0 and yStart = 0] [
+    while [(xStart = 0 and yStart = 0 ) or  pcolor = 9.9999 ] [
       set xStart (random 16)
       set xcor xStart
       set yStart (random -16)
@@ -130,7 +130,7 @@ to setup
 
     set xStart 0
     set yStart  0
-    while [xStart = 0 and yStart = 0] [
+    while [(xStart = 0 and yStart = 0 ) or  pcolor = 9.9999 ] [
       set xStart (random -16)
       set xcor xStart
       set yStart (random  -16)
@@ -152,7 +152,7 @@ to setup
     set shape "bug"
     set xStart 0
     set yStart  0
-    while [xStart = 0 and yStart = 0] [
+    while [(xStart = 0 and yStart = 0 ) or  pcolor = 9.9999 ] [
       set xStart (random -16)
       set xcor xStart
       set yStart (random  16)
@@ -195,15 +195,6 @@ to do-plots
   if(countStepA* > 0) [set-current-plot-pen "pen-2" set-plot-pen-interval 1.5 plot countStepA*]
 
   if(countStepUCS > 0) [set-current-plot-pen "pen-3" set-plot-pen-interval 2 plot countStepUCS]
-;  if (indexDFS = 4) [set-current-plot-pen "pen-4" plot countStep]
-;  if (indexDFS = 5) [set-current-plot-pen "pen-5" plot countStep]
-;  if (indexDFS = 6) [set-current-plot-pen "pen-6" plot countStep]
-;  set-current-plot-pen "pen-2"
-;  plot count turtles
-;  set-current-plot-pen "pen-3"
-;  plot count patches with [pcolor = green]
-;  set-current-plot-pen "pen-4"
-;  plot countStep
 end
 
 to ALL
@@ -231,7 +222,7 @@ to ALL
           set FirstTime (FirstTime + 1)
         ][
           set tmp (item indexDFS mainFrontierList )
-          set pen-mode "center"]
+          ]
 
         let front (first tmp) ; get avariable
 
@@ -243,7 +234,10 @@ to ALL
 
         set mainPathList replace-item indexDFS mainPathList tmpPathList
 
-        setxy (first front) (item 1 front)
+        setxy (item 2 front) (item 3 front)
+        set pen-mode "down"
+        setxy (item 0 front) (item 1 front)
+        set pen-mode "up"
         set countStepDFS countStepDFS + 1
 
         do-plots
@@ -317,10 +311,10 @@ to ALL
         set mainPathList replace-item indexInFrontPath mainPathList tmpPathList
 
         ;setxy (first front) (item 1 front)
-            setxy (item 2 front) (item 3 front)
-            set pen-mode "down"
-            setxy (item 0 front) (item 1 front) ;move to
-            set pen-mode "up"
+        setxy (item 2 front) (item 3 front)
+        set pen-mode "down"
+        setxy (item 0 front) (item 1 front) ;move to
+        set pen-mode "up"
         set countStepBFS countStepBFS + 1
 
         do-plots
@@ -399,7 +393,6 @@ to ALL
           set tmp (item indexInFrontPath mainFrontierList )
 
           set indexMinNode ( findIndexOfMinNode tmp)
-          set pen-mode "center"
         ]
 
         if(indexMinNode = -1) [
@@ -418,8 +411,11 @@ to ALL
 
 
         set mainFrontierList replace-item indexInFrontPath mainFrontierList tmp
-        setxy (first minCostNode) (item 1 minCostNode) ; move to
 
+        setxy (item 2 minCostNode) (item 3 minCostNode)
+        set pen-mode "down"
+        setxy (item 0 minCostNode) (item 1 minCostNode)
+        set pen-mode "up"
         set countStepA* countStepA* + 1
 
 
@@ -454,6 +450,7 @@ to ALL
         [
           set tmp insert-item 0 tmp (list (xcor - sizePath) (ycor + sizePath) xcor ycor ( pastCost + sqrt(2)))
         ]
+
 
         set mainFrontierList replace-item indexInFrontPath mainFrontierList tmp
 
@@ -874,7 +871,7 @@ A*agents
 A*agents
 0
 100
-13.0
+2.0
 1
 1
 NIL
@@ -889,7 +886,7 @@ DFSagents
 DFSagents
 0
 100
-8.0
+20.0
 1
 1
 NIL
@@ -904,7 +901,7 @@ BFSagents
 BFSagents
 0
 100
-11.0
+17.0
 1
 1
 NIL
@@ -919,7 +916,7 @@ UCSagents
 UCSagents
 0
 100
-11.0
+25.0
 1
 1
 NIL
