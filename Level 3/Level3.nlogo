@@ -54,7 +54,7 @@ to setup
   set sizePath 1
   set patchDistance 1
   set xGoal 0
-  set yGoal 1
+  set yGoal -2
 
   set FirstTime 0
 
@@ -96,7 +96,7 @@ to setup
 
   create-Starts BFSagents [
     set BFSagentList lput ( Start (indexBFS + numberOfDFS) ) BFSagentList
-    set color white
+    set color pink
 
     set heading 0
     set size 1
@@ -190,11 +190,11 @@ to do-plots
   set-current-plot "RESCUE THE PRINCESS"
   if(countStepDFS > 0) [set-current-plot-pen "pen-0" set-plot-pen-interval 1 plot countStepDFS]
 
-  if(countStepBFS > 0) [set-current-plot-pen "pen-1" set-plot-pen-interval 0.5 plot countStepBFS]
+  if(countStepBFS > 0) [set-current-plot-pen "pen-1" set-plot-pen-interval 1 plot countStepBFS]
 
-  if(countStepA* > 0) [set-current-plot-pen "pen-2" set-plot-pen-interval 1.5 plot countStepA*]
+  if(countStepA* > 0) [set-current-plot-pen "pen-2" set-plot-pen-interval 1 plot countStepA*]
 
-  if(countStepUCS > 0) [set-current-plot-pen "pen-3" set-plot-pen-interval 2 plot countStepUCS]
+  if(countStepUCS > 0) [set-current-plot-pen "pen-3" set-plot-pen-interval 1 plot countStepUCS]
 end
 
 to ALL
@@ -751,10 +751,10 @@ to save-patch-data
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-268
-25
-771
-529
+272
+12
+775
+516
 -1
 -1
 15.0
@@ -864,29 +864,14 @@ NIL
 
 SLIDER
 1116
-288
+239
 1288
-321
+272
 A*agents
 A*agents
 0
 100
-2.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-1111
-105
-1283
-138
-DFSagents
-DFSagents
-0
-100
-20.0
+5.0
 1
 1
 NIL
@@ -894,29 +879,44 @@ HORIZONTAL
 
 SLIDER
 1114
-170
+132
 1286
-203
-BFSagents
-BFSagents
+165
+DFSagents
+DFSagents
 0
 100
-17.0
+5.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-1115
-236
-1287
-269
+1114
+186
+1286
+219
+BFSagents
+BFSagents
+0
+100
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1117
+287
+1289
+320
 UCSagents
 UCSagents
 0
 100
-25.0
+5.0
 1
 1
 NIL
@@ -939,9 +939,9 @@ false
 "" ""
 PENS
 "pen-0" 1.0 0 -13791810 true "" ""
-"pen-1" 1.0 0 -7500403 true "" ""
+"pen-1" 1.0 0 -2064490 true "" ""
 "pen-2" 1.0 0 -11085214 true "" ""
-"pen-3" 1.0 0 -955883 true "" ""
+"pen-3" 1.0 0 -1184463 true "" ""
 "pen-4" 1.0 0 -6459832 true "" ""
 "pen-5" 1.0 0 -1184463 true "" ""
 "pen-6" 1.0 0 -10899396 true "" ""
